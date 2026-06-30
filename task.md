@@ -84,11 +84,7 @@
 
 - **步骤 4：按实现约束完成最小实现**
    - 创建 `backend/` 目录结构
-<<<<<<< HEAD
-   - 创建 `requirements.txt`（fastapi, uvicorn, sqlalchemy, alembic, psycopg2-binary, pydantic, celery, redis）
-=======
    - 创建 `requirements.txt`（fastapi, uvicorn, sqlalchemy, alembic, pydantic, celery, redis）
->>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
    - 创建 `backend/app/config.py`：从环境变量读取数据库URL、Redis URL、最大并发数等配置
    - 创建 `backend/app/database.py`：SQLAlchemy async engine、sessionmaker、Base
    - 创建 `backend/app/models.py`：定义 Model、Agent、Dataset、EvaluationTask、SubTaskResult 五个 ORM 模型，字段类型和约束与 design.md 3.1 一致
@@ -334,11 +330,7 @@
 
 ### [x] 任务 6：Docker 编排与集成验证
 
-<<<<<<< HEAD
-**任务目标：** 创建 Docker Compose 编排文件，将前后端、Redis、PostgreSQL 打包为可一键启动的开发环境，执行端到端集成验证。
-=======
 **任务目标：** 创建 Docker Compose 编排文件，将前后端、Redis 打包为可一键启动的开发环境（数据库使用 SQLite 文件，无需独立服务），执行端到端集成验证。
->>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
 
 **依据：**
 - 设计：`design.md` 2.1-2.2 设计决策
@@ -369,11 +361,7 @@
 - **步骤 4：按实现约束完成最小实现**
    - 创建 `Dockerfile.backend`：基于 python:3.11，安装依赖，启动 FastAPI + Celery worker
    - 创建 `Dockerfile.frontend`：基于 node:20，构建并使用 nginx 服务静态文件
-<<<<<<< HEAD
-   - 创建 `docker-compose.yml`：定义 postgres、redis、backend-api、backend-worker、frontend 五个服务
-=======
    - 创建 `docker-compose.yml`：定义 redis、backend-api、backend-worker、frontend 四个服务（SQLite 数据库以文件形式挂载，无需独立容器）
->>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
    - 配置 Volume 挂载用于 Agent 执行结果收集
    - 配置环境变量传递数据库URL、Redis URL、认证Token等
 

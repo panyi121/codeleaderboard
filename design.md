@@ -7,11 +7,7 @@
 ### 1.2 设计约束
 
 1. 部署在华为内部服务器，Agent 执行环境为 Docker 沙箱
-<<<<<<< HEAD
-2. 技术栈：React 前端 + FastAPI 后端 + Celery 任务队列 + PostgreSQL 数据库
-=======
 2. 技术栈：React 前端 + FastAPI 后端 + Celery 任务队列 + SQLite 数据库
->>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
 3. MVP 阶段优先核心流程，后续迭代扩展功能
 4. 查看排行榜无需登录，触发评测和写操作需要鉴权
 5. Agent 执行需要调用模型 API，需支持不同模型的 API 格式差异
@@ -122,9 +118,12 @@
 |------------|------|------|------|
 | id | UUID | PK, 自动生成 | 主键 |
 | name | VARCHAR(128) | UNIQUE, NOT NULL | 数据集名称 |
-| language | VARCHAR(32) | NOT NULL | 编程语言 |
-| task_count | INTEGER | NOT NULL | 任务总数 |
-| config_path | VARCHAR(512) | NOT NULL | 配置文件路径 |
+| language | VARCHAR(32) | NOT NULL | 编程语言（含"多语言"） |
+| task_count | INTEGER | NOT NULL, DEFAULT=0 | 任务总数（导入前为0） |
+| source_type | ENUM | NOT NULL, DEFAULT='本地' | 内置/huggingface/本地 |
+| hf_repo_id | VARCHAR(256) | NULL | HuggingFace repo ID，如 `princeton-nlp/SWE-bench` |
+| import_status | ENUM | NOT NULL, DEFAULT='就绪' | 就绪/导入中/解析失败 |
+| config_path | VARCHAR(512) | NULL | 本地配置文件路径（非HF来源时使用） |
 | description | TEXT | | 描述 |
 | created_at | TIMESTAMP | NOT NULL, 自动生成 | 创建时间 |
 
@@ -153,11 +152,7 @@
 | task_id | UUID | FK -> EvaluationTask, NOT NULL | 所属评测任务 |
 | dataset_task_id | VARCHAR(128) | NOT NULL | 数据集中的任务标识 |
 | result | ENUM | NOT NULL | 通过/失败/超时/未执行 |
-<<<<<<< HEAD
-| trajectory | JSONB | NULL | Agent执行轨迹 |
-=======
 | trajectory | JSON | NULL | Agent执行轨迹 |
->>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
 | code_diff | TEXT | NULL | 代码变更差异 |
 | execution_time | FLOAT | NULL | 执行耗时(秒) |
 | token_usage | INTEGER | NULL | Token消耗量 |
@@ -367,6 +362,54 @@ Path参数: task_id (UUID), subtask_id (UUID)
       "description": "..."
     }
   ]
+}
+```
+
+#### POST /api/datasets/import
+
+**说明**：通过 HuggingFace 链接异步导入数据集（需认证）
+
+**输入**：
+
+```
+{
+  "hf_url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench",
+  "name": "SWE-bench",          // 可选，默认从 repo ID 推断
+  "language": "Python",         // 可选，默认从数据集元信息推断
+  "description": "..."          // 可选
+}
+```
+
+**输出**：
+
+```
+{
+  "dataset_id": "uuid",
+  "name": "SWE-bench",
+  "import_status": "导入中",
+  "message": "数据集导入任务已创建，请稍后刷新查看"
+}
+```
+
+**错误处理**：
+
+| 错误场景 | 状态码 | 说明 |
+|----------|--------|------|
+| URL 格式非法 | 422 | 非 HuggingFace 域名或缺少 repo 路径 |
+| 数据集名称重复 | 409 | 同名数据集已存在 |
+| 未认证 | 401 | 需要登录 |
+
+#### POST /api/datasets/sync-builtin
+
+**说明**：一键同步所有内置主流数据集（需认证），已存在的跳过
+
+**输出**：
+
+```
+{
+  "synced": ["SWE-bench", "SWE-bench_Lite", "Multi-SWE-Bench-Java"],
+  "skipped": ["multi-swe-bench"],
+  "message": "同步完成"
 }
 ```
 

@@ -104,17 +104,41 @@
 
 1. Scenario: 查看可用数据集
 - **WHEN** 用户访问数据集页面
-- **THEN** 系统展示所有已配置的数据集，包括名称、语言、任务总数、描述
+- **THEN** 系统展示所有已配置的数据集，包括名称、语言、任务总数、描述、来源（内置/HuggingFace导入）
 
 2. Scenario: 查看数据集任务列表
 - **WHEN** 用户点击某个数据集
 - **THEN** 系统展示该数据集包含的所有任务，包括任务ID、仓库名、Issue标题、难度等级
 
+3. Scenario: 通过 HuggingFace 链接导入数据集
+- **WHEN** 已认证用户提交一个 HuggingFace 数据集链接（如 `https://huggingface.co/datasets/princeton-nlp/SWE-bench`）
+- **THEN** 系统在后台拉取该数据集的元信息和任务列表，解析完成后注册为可用数据集，期间展示"导入中"状态
+
+4. Scenario: 一键同步内置主流数据集
+- **WHEN** 已认证用户点击"同步内置数据集"
+- **THEN** 系统自动录入以下预定义数据集（若已存在则跳过）：
+  - `princeton-nlp/SWE-bench`（Python，300 tasks）
+  - `princeton-nlp/SWE-bench_Lite`（Python，300 tasks 精简版）
+  - `multi-swe-bench/multi-swe-bench`（多语言，含 Java/Python/JS 等）
+  - `ByteDance-Seed/multi-swe-bench`（Java 子集，80 tasks）
+
+5. Scenario: 查看数据集导入进度
+- **WHEN** 用户在导入任务进行中查看数据集列表
+- **THEN** 系统对"导入中"的数据集展示进度条或状态标签，导入完成后自动刷新
+
 #### 异常场景
 
 1. Scenario: 数据集配置文件缺失
-- **WHEN** 系统启动时数据集配置文件不存在
+- **WHEN** 系统启动时本地数据集配置文件不存在
 - **THEN** 系统以空数据集列表启动，日志记录警告信息
+
+2. Scenario: HuggingFace 链接无效或不可达
+- **WHEN** 用户提交的链接解析失败（404、非数据集页面、网络超时）
+- **THEN** 系统返回明确错误信息，数据集不被创建
+
+3. Scenario: HuggingFace 数据集格式不兼容
+- **WHEN** 拉取的数据集缺少必要字段（instance_id、repo、problem_statement）
+- **THEN** 系统记录字段映射失败详情，将数据集标记为"解析失败"，任务数为 0
 
 ---
 
@@ -197,15 +221,26 @@
 #### 2.5 数据集
 
 1. **名称**：唯一，不可为空，最大长度128字符
-2. **语言**：数据集的编程语言，如"Java"、"Python"等
-3. **任务总数**：正整数
-4. **配置路径**：数据集配置文件的路径
+2. **语言**：数据集的编程语言，如"Java"、"Python"、"多语言"等
+3. **任务总数**：非负整数（导入完成前为0）
+4. **来源类型**：枚举值，仅可为"内置"、"huggingface"、"本地"
+5. **HuggingFace repo ID**：当来源为 huggingface 时必填，格式为 `owner/dataset-name`
+6. **导入状态**：枚举值，仅可为"就绪"、"导入中"、"解析失败"
+7. **配置路径**：数据集配置文件的本地路径（来源为本地或内置时使用）
 
 ---
 
 ## 术语变更
 
 ### ADDED
+
+**HuggingFace 数据集导入**
+: 通过 HuggingFace Hub API 拉取公开数据集，解析其任务列表并注册为平台可用数据集的流程
+
+**内置数据集（Builtin Dataset）**
+: 平台预定义的主流评测数据集，含 HuggingFace repo ID 和字段映射规则，可一键同步，无需手动填写
+
+### ORIGINAL ADDED
 
 **解决率（Resolved Rate）**
 : 在评测数据集中，Agent成功解决问题的任务数占总任务数的百分比
