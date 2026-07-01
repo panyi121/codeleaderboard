@@ -7,7 +7,11 @@
 ### 1.2 设计约束
 
 1. 部署在华为内部服务器，Agent 执行环境为 Docker 沙箱
+<<<<<<< HEAD
 2. 技术栈：React 前端 + FastAPI 后端 + Celery 任务队列 + PostgreSQL 数据库
+=======
+2. 技术栈：React 前端 + FastAPI 后端 + Celery 任务队列 + SQLite 数据库
+>>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
 3. MVP 阶段优先核心流程，后续迭代扩展功能
 4. 查看排行榜无需登录，触发评测和写操作需要鉴权
 5. Agent 执行需要调用模型 API，需支持不同模型的 API 格式差异
@@ -149,7 +153,11 @@
 | task_id | UUID | FK -> EvaluationTask, NOT NULL | 所属评测任务 |
 | dataset_task_id | VARCHAR(128) | NOT NULL | 数据集中的任务标识 |
 | result | ENUM | NOT NULL | 通过/失败/超时/未执行 |
+<<<<<<< HEAD
 | trajectory | JSONB | NULL | Agent执行轨迹 |
+=======
+| trajectory | JSON | NULL | Agent执行轨迹 |
+>>>>>>> 83479ff8 (feat: add full-stack code leaderboard platform)
 | code_diff | TEXT | NULL | 代码变更差异 |
 | execution_time | FLOAT | NULL | 执行耗时(秒) |
 | token_usage | INTEGER | NULL | Token消耗量 |

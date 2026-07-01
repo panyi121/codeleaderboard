@@ -1,0 +1,61 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:///./data/codeleaderboard.db
+      REDIS_URL: redis://redis:6379/0
+      API_TOKENS: '["your-secret-token"]'
+      MAX_CONCURRENT_EVALUATIONS: "3"
+      TASK_TIMEOUT_SECONDS: "1800"
+      DATASETS_CONFIG_PATH: /data/datasets
+    volumes:
+      - db_data:/app/data
+      - agent_results:/app/results
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  backend-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=3
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:///./data/codeleaderboard.db
+      REDIS_URL: redis://redis:6379/0
+      API_TOKENS: '["your-secret-token"]'
+      MAX_CONCURRENT_EVALUATIONS: "3"
+      TASK_TIMEOUT_SECONDS: "1800"
+      DATASETS_CONFIG_PATH: /data/datasets
+    volumes:
+      - db_data:/app/data
+      - agent_results:/app/results
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-api
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  agent_results:
