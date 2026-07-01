@@ -15,6 +15,6 @@ beforeEach(() => {
 
 test('renders agent management page', async () => {
   render(<MemoryRouter><Agents /></MemoryRouter>);
-  await waitFor(() => expect(screen.getByText('Agent 管理')).toBeInTheDocument());
-  expect(screen.getByText('Claude Code')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText('Claude Code')).toBeInTheDocument());
+  expect(screen.getByText('Agent 管理')).toBeInTheDocument();
 });

@@ -15,8 +15,8 @@ beforeEach(() => {
 
 test('renders model management page', async () => {
   render(<MemoryRouter><Models /></MemoryRouter>);
-  await waitFor(() => expect(screen.getByText('模型管理')).toBeInTheDocument());
-  expect(screen.getByText('GLM-5.2')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText('GLM-5.2')).toBeInTheDocument());
+  expect(screen.getByText('模型管理')).toBeInTheDocument();
 });
 
 test('shows register button', async () => {

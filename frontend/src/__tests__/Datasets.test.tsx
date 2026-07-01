@@ -15,6 +15,6 @@ beforeEach(() => {
 
 test('renders datasets page', async () => {
   render(<MemoryRouter><Datasets /></MemoryRouter>);
-  await waitFor(() => expect(screen.getByText('数据集')).toBeInTheDocument());
-  expect(screen.getByText('Multi-SWE-Bench-Java')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText('Multi-SWE-Bench-Java')).toBeInTheDocument());
+  expect(screen.getByText('数据集')).toBeInTheDocument();
 });
